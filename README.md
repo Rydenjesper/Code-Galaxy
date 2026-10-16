@@ -4,15 +4,7 @@
 
 ![This repo as a galaxy](https://raw.githubusercontent.com/Rydenjesper/Code-Galaxy/galaxy/galaxy.svg)
 
-*This repo's own galaxy, re-rendered on every push by the [GitHub Action](#keep-it-fresh-in-your-readme-github-action) below.*
-
-```bash
-npx code-galaxy .                          # writes galaxy.svg
-npx code-galaxy . --png                    # also galaxy.png (1200×1200, still)
-npx code-galaxy . --still                  # SVG without animation
-npx code-galaxy github.com/facebook/react  # shallow clone to a temp dir, analyze, delete
-npx code-galaxy . --json                   # every metric, no picture
-```
+*This repo's own galaxy, re-rendered on every push by the [GitHub Action](#option-1-a-galaxy-in-your-github-readme-that-stays-up-to-date) below.*
 
 | facebook/react | django/django |
 |---|---|
@@ -21,6 +13,73 @@ npx code-galaxy . --json                   # every metric, no picture
 | ![vite](examples/vite.svg) | ![requests](examples/requests.svg) |
 
 It is not random art seeded by a hash. Every object in the picture is real code, and every visual property comes from a metric.
+
+## Get started
+
+Supports JavaScript, TypeScript and Python.
+
+### Option 1: a galaxy in your GitHub README that stays up to date
+
+Nothing to install.
+
+**1.** Add `.github/workflows/galaxy.yml` to your repo:
+
+```yaml
+name: Galaxy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  galaxy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Rydenjesper/Code-Galaxy@main
+```
+
+**2.** Put this in your README, with your own owner and repo name:
+
+```markdown
+![Code galaxy](https://raw.githubusercontent.com/OWNER/REPO/galaxy/galaxy.svg)
+```
+
+**3.** Push. About half a minute later your galaxy is there, and it re-renders on every push to `main`. If the image is missing the first time, the workflow hasn't finished yet; you can also start it by hand under **Actions → Galaxy → Run workflow**.
+
+How it works: the galaxy is force-pushed as the only file on a `galaxy` branch. Nothing is committed to `main`, so there are no commit loops and no history piling up.
+
+Options (under `with:`): `path` (folder to analyze, default `.`), `branch` (default `galaxy`), `png: true` (also a still `galaxy.png`), `name` (title in the legend, default `owner/repo`).
+
+GitHub blocks scripts in images, so a README shows the fallback animation: the system turns as one body, moons orbit, imports pulse. The real orbits run when you open the SVG itself in a browser.
+
+### Option 2: on your own machine
+
+Requires Node 20+ and git.
+
+```bash
+git clone https://github.com/Rydenjesper/Code-Galaxy.git
+cd Code-Galaxy
+npm install && npm run build
+```
+
+Then point it at any folder or public GitHub repo:
+
+```bash
+node packages/cli/dist/index.js ~/my-project                  # writes galaxy.svg here
+node packages/cli/dist/index.js ~/my-project --png            # also galaxy.png (1200×1200, still)
+node packages/cli/dist/index.js github.com/facebook/react     # shallow clone, analyze, delete
+node packages/cli/dist/index.js ~/my-project --still          # SVG without animation
+node packages/cli/dist/index.js ~/my-project --json           # every metric, no picture
+node packages/cli/dist/index.js ~/my-project -o space.svg     # other file name
+```
+
+Open `galaxy.svg` in a browser to see it move. Your code never leaves your machine.
+
+> An npm package is on the way, so this will become `npx code-galaxy .`.
 
 ## How to read it
 
@@ -52,45 +111,13 @@ Most repos keep the bulk of their code in one folder (`packages/`, `src/`, `src/
 
 Tests, examples, scripts and config are drawn like any other code, but they don't pick the core or the orbits. Otherwise thousands of tests importing `react` would make `react` the core of the React repo (it's `shared`).
 
-## Keep it fresh in your README (GitHub Action)
-
-Add `.github/workflows/galaxy.yml` to your repo:
-
-```yaml
-name: Galaxy
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-jobs:
-  galaxy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: Rydenjesper/Code-Galaxy@main
-```
-
-Then put this in your README (swap in your owner/repo):
-
-```markdown
-![Code galaxy](https://raw.githubusercontent.com/OWNER/REPO/galaxy/galaxy.svg)
-```
-
-Every push to `main` re-renders the galaxy and force-pushes it as the only file on the `galaxy` branch. Nothing is committed to `main`, so there are no commit loops and no history piling up. Options: `path` (folder to analyze), `branch` (default `galaxy`), `png: true` (also a still `galaxy.png`), `name` (legend title).
-
-GitHub blocks scripts in images, so the README gets the fallback animation (the system turns as one body, moons orbit, imports pulse). The real orbits run when the SVG is opened in a browser from your own machine or a web page.
-
 ## Known limits (v0.1)
 
 - JavaScript, TypeScript and Python only. Other files are ignored.
 - Static imports only. Code loaded dynamically by name (Django's `import_module`, plugin registries) shows up as dead.
 - "Lines of code" = non-blank lines, comments included.
 
-## Repo layout
+## Development
 
 - `packages/core` (`@code-galaxy/core`): analysis and rendering. No Node-only APIs, so it runs in the browser too. Parsing uses `web-tree-sitter` (WASM); grammars ship in `packages/core/grammars`.
 - `packages/cli` (`code-galaxy`): a thin shell that walks the folder (respecting `.gitignore`), clones GitHub URLs, and writes SVG/PNG/JSON (PNG via `resvg-js`).
@@ -98,7 +125,6 @@ GitHub blocks scripts in images, so the README gets the fallback animation (the 
 ```bash
 npm install
 npm test        # builds and runs the tests
-node packages/cli/dist/index.js ~/some/repo --png
 ```
 
 ## Prior art
