@@ -18,7 +18,7 @@ inputs:
     description: Name shown in the legend.
     default: ${{ github.repository }}
   token:
-    description: Token allowed to push the branch (the job needs `permissions: contents: write`).
+    description: 'Token allowed to push the branch (the job needs `permissions: contents: write`).'
     default: ${{ github.token }}
 
 runs:
