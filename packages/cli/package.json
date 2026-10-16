@@ -1,0 +1,15 @@
+{
+  "name": "code-galaxy",
+  "version": "0.1.0",
+  "description": "Point it at your code. Get a galaxy back.",
+  "type": "module",
+  "bin": { "code-galaxy": "dist/index.js" },
+  "files": ["dist"],
+  "scripts": { "build": "tsc -p ." },
+  "dependencies": {
+    "@code-galaxy/core": "0.1.0",
+    "@resvg/resvg-js": "2.6.2",
+    "ignore": "7.0.12"
+  },
+  "license": "MIT"
+}

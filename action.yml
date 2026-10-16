@@ -1,0 +1,59 @@
+name: Code Galaxy
+description: Render your repo as a galaxy and keep it fresh on its own branch, ready to embed in your README.
+branding:
+  icon: star
+  color: blue
+
+inputs:
+  path:
+    description: Folder to analyze, relative to the repo root.
+    default: .
+  branch:
+    description: Branch the image is published to. It holds only the image and is overwritten on every run.
+    default: galaxy
+  png:
+    description: Also publish galaxy.png (a still frame).
+    default: 'false'
+  name:
+    description: Name shown in the legend.
+    default: ${{ github.repository }}
+  token:
+    description: Token allowed to push the branch (the job needs `permissions: contents: write`).
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Build code-galaxy
+      shell: bash
+      run: |
+        cd "$GITHUB_ACTION_PATH"
+        npm ci --no-audit --no-fund --loglevel=error
+        npm run build --silent
+
+    - name: Render galaxy
+      shell: bash
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_NAME: ${{ inputs.name }}
+        INPUT_PNG: ${{ inputs.png }}
+      run: |
+        out="$RUNNER_TEMP/code-galaxy"
+        mkdir -p "$out"
+        flags=()
+        [ "$INPUT_PNG" = "true" ] && flags+=(--png)
+        node "$GITHUB_ACTION_PATH/packages/cli/dist/index.js" "$INPUT_PATH" -o "$out/galaxy.svg" --name "$INPUT_NAME" "${flags[@]}"
+
+    - name: Publish to branch
+      shell: bash
+      env:
+        INPUT_BRANCH: ${{ inputs.branch }}
+        INPUT_TOKEN: ${{ inputs.token }}
+      run: |
+        "$GITHUB_ACTION_PATH/scripts/publish.sh" "$RUNNER_TEMP/code-galaxy" \
+          "https://x-access-token:${INPUT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+          "$INPUT_BRANCH" "$GITHUB_SHA"

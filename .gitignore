@@ -1,0 +1,7 @@
+node_modules
+dist
+*.tsbuildinfo
+galaxy.svg
+galaxy.png
+galaxy.json
+samples/

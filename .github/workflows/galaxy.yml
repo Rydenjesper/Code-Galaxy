@@ -1,0 +1,17 @@
+# Renders this repo's own galaxy on every push and publishes it to the `galaxy` branch.
+# Other repos use `uses: Rydenjesper/Code-Galaxy@main` instead of `./`.
+name: Galaxy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  galaxy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./

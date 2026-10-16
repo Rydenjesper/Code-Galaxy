@@ -1,0 +1,12 @@
+{
+  "name": "@code-galaxy/core",
+  "version": "0.1.0",
+  "description": "Analyze a codebase and render it as a galaxy. Runs in Node and the browser.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "grammars"],
+  "scripts": { "build": "tsc -p ." },
+  "dependencies": { "web-tree-sitter": "0.27.1" },
+  "license": "MIT"
+}
